@@ -1,0 +1,28 @@
+# Example only: inspect `aux` and `get msp_override_channels` first.
+# INAV 9.x, physical receiver still connected.
+
+# CH5/AUX1: ARM, driven by Pi while takeover is active
+aux 0 0 0 1700 2100
+
+# CH6/AUX2: ANGLE, driven by Pi
+aux 1 1 1 1700 2100
+
+# CH8/AUX4: physical transmitter permission/takeover switch
+aux 2 50 3 1700 2100
+
+# Choose ONE override profile before `save`:
+
+# A) Full GPS mission: Pi controls CH1..CH6 (roll/pitch/yaw/throttle/ARM/ANGLE).
+# set msp_override_channels = 63
+
+# B) Altitude-only / props-off bench: Pi controls only CH3 throttle + CH5 ARM.
+# Physical receiver keeps roll/pitch/yaw and must hold CH6 ANGLE ON.
+# INAV applies this mask in internal AERT order: throttle bit 3 (8) plus
+# ARM/AUX1 bit 4 (16), therefore 8 + 16 = 24 even when receiver map is AETR.
+set msp_override_channels = 24
+save
+
+# CH8 MUST be excluded from both masks so physical permission remains available.
+# Keep RTH/FAILSAFE on another physical channel that is also excluded.
+# Do not assign NAV ALTHOLD or NAV POSHOLD: the Pi closes the altitude outer loop
+# and INAV runs ANGLE/rate control.
